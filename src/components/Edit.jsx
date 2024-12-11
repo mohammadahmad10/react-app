@@ -182,7 +182,7 @@ export default function Edit() {
           } text-center py-2 rounded-lg mt-5`}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Loading..." : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
