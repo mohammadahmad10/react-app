@@ -1,37 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 
 export default function Add() {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    company: "",
-    color: "",
-    email: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm();
   const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      setLoading(true);
       setError(null);
       setSuccess(false);
       const response = await axios.post(
         "https://rf-json-server.herokuapp.com/events",
-        formData,
+        data,
         {
           headers: {
             "Content-Type": "application/json",
@@ -40,20 +29,11 @@ export default function Add() {
       );
       console.log("Form Data Submitted:", response.data);
       setSuccess(true);
-      setError(null);
+      reset(); // Resets the form fields
       navigate("/");
-      setFormData({
-        name: "",
-        description: "",
-        company: "",
-        color: "",
-        email: "",
-      });
     } catch (error) {
       console.error("Error submitting data:", error);
       setError("Failed to submit the data. Please try again later.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -63,7 +43,7 @@ export default function Add() {
         Create
       </h2>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col justify-center gap-5 w-1/2 max-md:w-full"
       >
         <div className="flex flex-col gap-2">
@@ -72,74 +52,61 @@ export default function Add() {
             type="text"
             placeholder="Enter Name"
             id="name"
-            name="name"
-            className="border-2 border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
-            required
-            minLength={3}
-            value={formData.name}
-            onChange={handleChange}
+            className="border-[2px] border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
+            {...register("name", { required: "Name is required", minLength: { value: 3, message: "Name must be at least 3 characters long" } })}
           />
+          {errors.name && <span className="text-red-500">{errors.name.message}</span>}
         </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="description">Description</label>
           <input
             type="text"
             placeholder="Enter Description"
             id="description"
-            name="description"
-            className="border-2 border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
-            required
-            minLength={3}
-            value={formData.description}
-            onChange={handleChange}
+            className="border-[2px] border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
+            {...register("description", { required: "Description is required", minLength: { value: 3, message: "Description must be at least 3 characters long" } })}
           />
+          {errors.description && <span className="text-red-500">{errors.description.message}</span>}
         </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="company">Company</label>
           <input
             type="text"
             placeholder="Enter Company Name"
             id="company"
-            name="company"
-            className="border-2 border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
-            required
-            minLength={3}
-            value={formData.company}
-            onChange={handleChange}
+            className="border-[2px] border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
+            {...register("company", { required: "Company is required", minLength: { value: 3, message: "Company must be at least 3 characters long" } })}
           />
+          {errors.company && <span className="text-red-500">{errors.company.message}</span>}
         </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="color">Color</label>
           <input
             type="text"
             placeholder="Enter Color"
             id="color"
-            name="color"
-            className="border-2 border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
-            required
-            minLength={3}
-            value={formData.color}
-            onChange={handleChange}
+            className="border-[2px] border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
+            {...register("color", { required: "Color is required", minLength: { value: 3, message: "Color must be at least 3 characters long" } })}
           />
+          {errors.color && <span className="text-red-500">{errors.color.message}</span>}
         </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="email">Email</label>
           <input
             type="email"
             placeholder="Enter Email"
             id="email"
-            name="email"
-            className="border-2 border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
-            required
-            minLength={3}
-            value={formData.email}
-            onChange={handleChange}
+            className="border-[2px] border-gray-300 rounded-lg w-full px-4 py-2 outline-none"
+            {...register("email", { required: "Email is required", pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email address" } })}
           />
+          {errors.email && <span className="text-red-500">{errors.email.message}</span>}
         </div>
 
-        {error && (
-          <div className="text-center text-red-500 text-xl">{error}</div>
-        )}
+        {error && <div className="text-center text-red-500 text-xl">{error}</div>}
 
         {success && (
           <div className="text-center text-green-500">
@@ -150,11 +117,11 @@ export default function Add() {
         <button
           type="submit"
           className={`max-w-3xl font-semibold text-white text-2xl ${
-            loading ? "bg-gray-300" : "bg-[#008AF2] "
+            isSubmitting ? "bg-gray-300" : "bg-[#008AF2] "
           } text-center py-2 rounded-lg mt-5`}
-          disabled={loading}
+          disabled={isSubmitting}
         >
-          {loading ? "Loading" : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
